@@ -1,0 +1,6 @@
+{
+  "name": "Weather Intel",
+  "description": "Production-ready Weather Intelligence app featuring Open-Meteo live forecasts, city autocomplete, 7-day outlook, temperature analytics charts, and activity planning recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
