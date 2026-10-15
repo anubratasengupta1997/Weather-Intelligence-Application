@@ -54,8 +54,10 @@ import com.example.data.network.OpenMeteoApiService
 import com.example.domain.WeatherRepository
 import com.example.ui.WeatherUiState
 import com.example.ui.WeatherViewModel
+import com.example.notification.WeatherNotificationHelper
 import com.example.ui.components.CityNotFoundView
 import com.example.ui.components.CurrentWeatherHero
+import com.example.ui.components.DailyNotificationCard
 import com.example.ui.components.Forecast7DayView
 import com.example.ui.components.NetworkErrorView
 import com.example.ui.components.PlanningRecommendationsView
@@ -63,11 +65,16 @@ import com.example.ui.components.SearchBarWithAutocomplete
 import com.example.ui.components.TemperatureTrendChart
 import com.example.ui.components.WeatherMetricsGrid
 import com.example.ui.theme.WeatherIntelTheme
+import com.example.worker.WeatherWorkScheduler
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize Notification Channel and schedule daily weather briefing
+        WeatherNotificationHelper.createNotificationChannel(applicationContext)
+        WeatherWorkScheduler.scheduleDailySummary(applicationContext)
 
         val apiService = OpenMeteoApiService.create()
         val database = WeatherDatabase.getInstance(applicationContext)
@@ -277,23 +284,32 @@ fun WeatherAppScreen(
                                     planning = data.planning
                                 )
 
+                                // Daily Weather Summary WorkManager Card
+                                DailyNotificationCard()
+
                                 Spacer(modifier = Modifier.height(24.dp))
                             }
                         }
 
                         is WeatherUiState.CityNotFound -> {
-                            CityNotFoundView(
-                                searchedQuery = state.searchedQuery,
-                                popularCities = popularCities,
-                                onSelectCity = viewModel::selectCity
-                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                CityNotFoundView(
+                                    searchedQuery = state.searchedQuery,
+                                    popularCities = popularCities,
+                                    onSelectCity = viewModel::selectCity
+                                )
+                                DailyNotificationCard()
+                            }
                         }
 
                         is WeatherUiState.Error -> {
-                            NetworkErrorView(
-                                message = state.message,
-                                onRetry = viewModel::refreshWeather
-                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                NetworkErrorView(
+                                    message = state.message,
+                                    onRetry = viewModel::refreshWeather
+                                )
+                                DailyNotificationCard()
+                            }
                         }
                     }
                 }
